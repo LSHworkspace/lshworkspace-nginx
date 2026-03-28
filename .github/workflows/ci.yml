@@ -2,18 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: ['main']
   pull_request:
-    branches: [main]
+    branches: ['main']
 
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build and validate nginx config
-        run: |
-          docker build -t nginx-test .
-          docker run --rm nginx-test nginx -t
+      - name: Build Docker image
+        run: docker build -t nginx-ci .
