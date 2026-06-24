@@ -61,10 +61,20 @@ jobs:
         uses: azure/setup-kubectl@v4
 
       - name: Set up kubeconfig
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
         run: |
           mkdir -p "$HOME/.kube"
-          echo "${{ secrets.KUBECONFIG }}" | base64 -d > "$HOME/.kube/config"
+
+          if printf '%s' "$KUBECONFIG_CONTENT" | base64 -d > "$HOME/.kube/config" 2>/dev/null && grep -q 'apiVersion:' "$HOME/.kube/config"; then
+            echo "Using base64-encoded kubeconfig"
+          else
+            printf '%s' "$KUBECONFIG_CONTENT" > "$HOME/.kube/config"
+            echo "Using plain-text kubeconfig"
+          fi
+
           chmod 600 "$HOME/.kube/config"
+          kubectl config view --minify >/dev/null
 
       - name: Deploy to K3s
         run: |
